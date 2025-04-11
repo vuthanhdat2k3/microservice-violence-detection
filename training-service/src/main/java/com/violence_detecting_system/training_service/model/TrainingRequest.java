@@ -1,26 +1,22 @@
 package com.violence_detecting_system.training_service.model;
 
-
-import lombok.Data;
+import java.util.List;
 
 public class TrainingRequest {
-    private String videoUrl; // URL của video để huấn luyện
-    private String modelType; // Loại mô hình (movement)
+    private String modelName;
+    private String modelType; // "PERSON_DETECTION" or "VIOLENCE_DETECTION"
+    private String datasetPath;
+    private Integer epochs;
+    private Double learningRate;
+    private List<String> additionalParameters;
 
-    public TrainingRequest(String videoUrl, String modelType) {
-        this.videoUrl = videoUrl;
-        this.modelType = modelType;
+    // Getters and setters
+    public String getModelName() {
+        return modelName;
     }
 
-    public TrainingRequest() {
-    }
-
-    public String getVideoUrl() {
-        return videoUrl;
-    }
-
-    public void setVideoUrl(String videoUrl) {
-        this.videoUrl = videoUrl;
+    public void setModelName(String modelName) {
+        this.modelName = modelName;
     }
 
     public String getModelType() {
@@ -29,5 +25,37 @@ public class TrainingRequest {
 
     public void setModelType(String modelType) {
         this.modelType = modelType;
+    }
+
+    public String getDatasetPath() {
+        return datasetPath;
+    }
+
+    public void setDatasetPath(String datasetPath) {
+        this.datasetPath = datasetPath;
+    }
+
+    public Integer getEpochs() {
+        return epochs;
+    }
+
+    public void setEpochs(Integer epochs) {
+        this.epochs = epochs;
+    }
+
+    public Double getLearningRate() {
+        return learningRate;
+    }
+
+    public void setLearningRate(Double learningRate) {
+        this.learningRate = learningRate;
+    }
+
+    public List<String> getAdditionalParameters() {
+        return additionalParameters;
+    }
+
+    public void setAdditionalParameters(List<String> additionalParameters) {
+        this.additionalParameters = additionalParameters;
     }
 }

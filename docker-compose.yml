@@ -4,29 +4,83 @@ services:
     build: ./eureka-server
     ports:
       - "8761:8761"
-  api-gateway:
-    build: ./api-gateway
-    ports:
-      - "8080:8080"
-    depends_on:
-      - eureka-server
+    networks:
+      - video-analysis-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
   training-service:
     build: ./training-service
     ports:
-      - "8083:8083"
+      - "8081:8081"
+    networks:
+      - video-analysis-network
     depends_on:
-      - eureka-server
+      eureka-server:
+        condition: service_healthy
+      python-api:
+        condition: service_started
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - MODEL_STORAGE_PATH=/app/models
+      - PYTHON_API_URL=http://python-api:5000
+    volumes:
+      - model-data:/app/models
+
   detection-service:
     build: ./detection-service
     ports:
       - "8082:8082"
+    networks:
+      - video-analysis-network
     depends_on:
-      - eureka-server
-  python-api:
-    image: python:3.9
+      eureka-server:
+        condition: service_healthy
+      training-service:
+        condition: service_started
+      python-api:
+        condition: service_started
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - MODEL_CACHE_PATH=/app/model-cache
+      - TRAINING_SERVICE_URL=http://training-service:8081
+      - PYTHON_API_URL=http://python-api:5000
     volumes:
-      - ./python-api:/app
-    working_dir: /app
-    command: bash -c "python main.py"
+      - model-cache:/app/model-cache
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:8080"
+    networks:
+      - video-analysis-network
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+
+  python-api:
+    build: ./python-api
     ports:
       - "5000:5000"
+    networks:
+      - video-analysis-network
+    volumes:
+      - python-models:/app/models
+      - python-uploads:/app/uploads
+      - python-training:/app/training
+
+networks:
+  video-analysis-network:
+    driver: bridge
+
+volumes:
+  model-data:
+  model-cache:
+  python-models:
+  python-uploads:
+  python-training:

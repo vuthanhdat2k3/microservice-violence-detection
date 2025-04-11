@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Violence Detection</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .upload-form {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .result.fight {
+            background-color: #ffebee;
+            border: 1px solid #f44336;
+        }
+        .result.no-fight {
+            background-color: #e8f5e9;
+            border: 1px solid #4caf50;
+        }
+        video {
+            max-width: 100%;
+            margin-top: 20px;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3367d6;
+        }
+    </style>
+</head>
+<body>
+<h1>Violence Detection System</h1>
+
+<div class="upload-form">
+    <h2>Upload Video</h2>
+    <form method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".mp4,.avi,.mov">
+        <p>
+            <button type="submit">Analyze Video</button>
+        </p>
+    </form>
+</div>
+
+{% if result %}
+<div class="result {% if result.fight == 'Yes' %}fight{% else %}no-fight{% endif %}">
+    <h3>Analysis Result:</h3>
+    <p><strong>Violence Detected:</strong> {{ result.fight }}</p>
+    <p><strong>Confidence:</strong> {{ result.percentage }}</p>
+</div>
+
+{% if video_path %}
+<div>
+    <h3>Uploaded Video:</h3>
+    <video controls>
+        <source src="{{ url_for('uploaded_file', filename=video_path) }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+</div>
+{% endif %}
+{% endif %}
+
+<div class="buttons">
+    <button id="cameraBtn" onclick="startCameraDetection()">Start Camera Detection</button>
+</div>
+
+<script>
+    function startCameraDetection() {
+        fetch('/detect_camera')
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error starting camera detection');
+            });
+    }
+</script>
+</body>
+</html>
